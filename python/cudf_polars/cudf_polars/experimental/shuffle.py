@@ -300,9 +300,6 @@ def _(
     ) == len(ir.keys):  # pragma: no cover
         from rapidsmpf.integrations.dask import rapidsmpf_shuffle_graph
 
-        # TODO: use_concat_insert should come from the configuration
-        # / environment. We need to plumb that though Shuffler init to here.
-
         shuffle_on = [k.name for k in _keys]
 
         try:
