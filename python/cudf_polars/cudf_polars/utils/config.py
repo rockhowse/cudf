@@ -341,7 +341,12 @@ class StreamingExecutor:
         'rapidsmpf' for distributed scheduler if available (otherwise 'tasks'),
         and 'tasks' for synchronous scheduler.
     use_concat_insert
-        Whether to use concat_insert for inserting chunks with the rapidsmpf shuffler.
+        Whether to use the ``concat_insertion`` method when inserting chunks to
+        the shuffle. Only applicable when ``shuffle_method`` is ``"rapidsmpf"``.
+
+        By default, ``insert_chunks`` is used, and so chunks are not
+        concatenated by destination rank during insertion. Setting this to ``True``
+        may improve performance, at the cost of higher memory usage on the device.
     rapidsmpf_spill
         Whether to wrap task arguments and output in objects that are
         spillable by 'rapidsmpf'.

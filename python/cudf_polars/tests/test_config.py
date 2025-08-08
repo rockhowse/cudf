@@ -340,6 +340,7 @@ def test_config_option_from_env(
 
         if rapidsmpf_available:
             m.setenv("CUDF_POLARS__EXECUTOR__SHUFFLE_METHOD", "rapidsmpf")
+            m.setenv("CUDF_POLARS__EXECUTOR__USE_CONCAT_INSERT", "1")
         else:
             m.setenv("CUDF_POLARS__EXECUTOR__SHUFFLE_METHOD", "tasks")
 
@@ -358,6 +359,7 @@ def test_config_option_from_env(
 
         if rapidsmpf_available:
             assert config.executor.shuffle_method == "rapidsmpf"
+            assert config.executor.use_concat_insert is True
         else:
             assert config.executor.shuffle_method == "tasks"
 
