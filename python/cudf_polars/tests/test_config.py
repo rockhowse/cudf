@@ -271,10 +271,11 @@ def test_validate_shuffle_method_defaults(rapidsmpf_available) -> None:
         "groupby_n_ary",
         "broadcast_join_limit",
         "rapidsmpf_spill",
+        "use_concat_insert",
         "sink_to_directory",
     ],
 )
-def test_validate_max_rows_per_partition(option: str) -> None:
+def test_validate_options(option: str) -> None:
     with pytest.raises(TypeError, match=f"{option} must be"):
         ConfigOptions.from_polars_engine(
             pl.GPUEngine(
@@ -428,12 +429,6 @@ def test_validate_raise_on_fail() -> None:
     with pytest.raises(TypeError, match="'raise_on_fail' must be"):
         ConfigOptions.from_polars_engine(
             pl.GPUEngine(executor="streaming", raise_on_fail=object())  # type: ignore[arg-type]
-        )
-
-def test_validate_use_concat_insert() -> None:
-    with pytest.raises(match="'use_concat_insert' must be"):
-        ConfigOptions.from_polars_engine(
-            pl.GPUEngine(executor="streaming", use_concat_insert="a")  # type: ignore[arg-type]
         )
 
 
