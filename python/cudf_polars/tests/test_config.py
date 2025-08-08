@@ -430,6 +430,12 @@ def test_validate_raise_on_fail() -> None:
             pl.GPUEngine(executor="streaming", raise_on_fail=object())  # type: ignore[arg-type]
         )
 
+def test_validate_use_concat_insert() -> None:
+    with pytest.raises(match="'use_concat_insert' must be"):
+        ConfigOptions.from_polars_engine(
+            pl.GPUEngine(executor="streaming", use_concat_insert="a")  # type: ignore[arg-type]
+        )
+
 
 def test_validate_executor() -> None:
     with pytest.raises(ValueError, match="Unknown executor 'foo'"):
