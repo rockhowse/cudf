@@ -16,6 +16,7 @@ import pandas as pd
 # I suspect it relates to pyarrow's pandas-shim that gets imported
 # with this module https://github.com/rapidsai/cudf/issues/14521#issue-2015198786
 import pyarrow.dataset as ds  # noqa: F401
+from pandas._testing import at, getitem, iat, iloc, loc, setitem
 from pandas.tseries.holiday import (
     AbstractHolidayCalendar as pd_AbstractHolidayCalendar,
     EasterMonday as pd_EasterMonday,
@@ -299,6 +300,8 @@ DataFrame = make_final_proxy_type(
         "_ipython_canary_method_should_not_exist_": ignore_ipython_canary_check,
         "dtypes": property(_DataFrame__dtypes),
         "__iter__": custom_iter,
+        "attrs": _FastSlowAttribute("attrs"),
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
     },
 )
 
@@ -346,6 +349,7 @@ Series = make_final_proxy_type(
         "_constructor_expanddim": _FastSlowAttribute("_constructor_expanddim"),
         "_accessors": set(),
         "dtype": property(_Series_dtype),
+        "attrs": _FastSlowAttribute("attrs"),
     },
 )
 
@@ -684,6 +688,8 @@ StringArray = make_final_proxy_type(
     additional_attributes={
         "_data": _FastSlowAttribute("_data", private=True),
         "_mask": _FastSlowAttribute("_mask", private=True),
+        "__array__": _FastSlowAttribute("__array__"),
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
     },
 )
 
@@ -720,6 +726,12 @@ ArrowStringArray = make_final_proxy_type(
     additional_attributes={
         "_pa_array": _FastSlowAttribute("_pa_array", private=True),
         "__array__": _FastSlowAttribute("__array__", private=True),
+        "__invert__": _FastSlowAttribute("__invert__"),
+        "__neg__": _FastSlowAttribute("__neg__"),
+        "__pos__": _FastSlowAttribute("__pos__", private=True),
+        "__abs__": _FastSlowAttribute("__abs__"),
+        "__contains__": _FastSlowAttribute("__contains__"),
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
     },
 )
 
@@ -1193,6 +1205,12 @@ register_proxy_func(pd.to_pickle)(_FunctionProxy(_Unusable(), pd.to_pickle))
 register_proxy_func(pd.api.types.is_list_like)(  # noqa: TID251
     _FunctionProxy(_Unusable(), pd.api.types.is_list_like)  # noqa: TID251
 )
+register_proxy_func(loc)(loc)
+register_proxy_func(iloc)(iloc)
+register_proxy_func(at)(at)
+register_proxy_func(iat)(iat)
+register_proxy_func(setitem)(setitem)
+register_proxy_func(getitem)(getitem)
 
 
 def _get_eval_locals_and_globals(level, local_dict=None, global_dict=None):
@@ -1936,7 +1954,7 @@ NamedAgg = make_final_proxy_type(
 )
 
 ArrowExtensionArray = make_final_proxy_type(
-    "ExtensionArray",
+    "ArrowExtensionArray",
     _Unusable,
     pd.arrays.ArrowExtensionArray,
     fast_to_slow=_Unusable(),
@@ -1944,6 +1962,12 @@ ArrowExtensionArray = make_final_proxy_type(
     additional_attributes={
         "_pa_array": _FastSlowAttribute("_pa_array", private=True),
         "__array__": _FastSlowAttribute("__array__", private=True),
+        "__invert__": _FastSlowAttribute("__invert__"),
+        "__neg__": _FastSlowAttribute("__neg__"),
+        "__pos__": _FastSlowAttribute("__pos__", private=True),
+        "__abs__": _FastSlowAttribute("__abs__"),
+        "__contains__": _FastSlowAttribute("__contains__"),
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
     },
 )
 
@@ -1953,6 +1977,9 @@ FrozenList = make_final_proxy_type(
     pd.core.indexes.frozen.FrozenList,
     fast_to_slow=_Unusable(),
     slow_to_fast=_Unusable(),
+    additional_attributes={
+        "__hash__": _FastSlowAttribute("__hash__"),
+    },
 )
 
 # The following are subclasses of `pandas.core.base.PandasObj`,
@@ -1960,13 +1987,55 @@ FrozenList = make_final_proxy_type(
 # not strictly part of the Pandas public API, but they do appear as
 # return types.
 
-_PANDAS_OBJ_FINAL_TYPES = [
-    pd.core.arrays.sparse.array.SparseArray,
-    pd.core.indexes.category.CategoricalIndex,
-    pd.core.indexes.datetimelike.DatetimeTimedeltaMixin,
-    pd.core.indexes.datetimelike.DatetimeIndexOpsMixin,
-    pd.core.indexes.extension.NDArrayBackedExtensionIndex,
+NDFrame = make_final_proxy_type(
+    "NDFrame",
+    _Unusable,
     pd.core.generic.NDFrame,
+    fast_to_slow=_Unusable(),
+    slow_to_fast=_Unusable(),
+    additional_attributes={
+        "__array__": array_method,
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
+    },
+)
+
+DatetimeTimedeltaMixin = make_final_proxy_type(
+    "DatetimeTimedeltaMixin",
+    _Unusable,
+    pd.core.indexes.datetimelike.DatetimeTimedeltaMixin,
+    fast_to_slow=_Unusable(),
+    slow_to_fast=_Unusable(),
+    additional_attributes={
+        "__array__": array_method,
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
+    },
+)
+
+DatetimeIndexOpsMixin = make_final_proxy_type(
+    "DatetimeIndexOpsMixin",
+    _Unusable,
+    pd.core.indexes.datetimelike.DatetimeIndexOpsMixin,
+    fast_to_slow=_Unusable(),
+    slow_to_fast=_Unusable(),
+    additional_attributes={
+        "__array__": array_method,
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
+    },
+)
+
+NDArrayBackedExtensionIndex = make_final_proxy_type(
+    "NDArrayBackedExtensionIndex",
+    _Unusable,
+    pd.core.indexes.extension.NDArrayBackedExtensionIndex,
+    fast_to_slow=_Unusable(),
+    slow_to_fast=_Unusable(),
+    additional_attributes={
+        "__array__": array_method,
+        "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
+    },
+)
+
+_PANDAS_OBJ_FINAL_TYPES = [
     pd.core.indexes.accessors.PeriodProperties,
     pd.core.indexes.accessors.Properties,
     pd.plotting._core.PlotAccessor,
@@ -1995,9 +2064,6 @@ for typ in _PANDAS_OBJ_FINAL_TYPES:
         fast_to_slow=_Unusable(),
         slow_to_fast=_Unusable(),
         additional_attributes={
-            "__array__": array_method,
-            "__array_function__": array_function_method,
-            "__array_ufunc__": _FastSlowAttribute("__array_ufunc__"),
             "__hash__": _FastSlowAttribute("__hash__"),
         },
     )
