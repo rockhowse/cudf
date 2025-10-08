@@ -1,6 +1,6 @@
 # Copyright (c) 2020-2025, NVIDIA CORPORATION.
 from libc.stddef cimport size_t
-from libc.stdint cimport int32_t, uint32_t
+from libc.stdint cimport int32_t, uint32_t, int8_t
 from libcpp cimport bool
 from pylibcudf.exception_handler cimport libcudf_exception_handler
 
