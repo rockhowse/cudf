@@ -314,7 +314,7 @@ std::string operation::generate_code(instance_context& ctx,
                                                 });
 
         auto cuda = std::format(
-          "auto {} = cudf::ast::detail::operator_functor<cudf::ast::ast_operator::{}, "
+          "{} {} = cudf::ast::detail::operator_functor<cudf::ast::ast_operator::{}, "
           "{}>{{}}({});",
           cuda_type(type_, ctx.has_nulls()),
           id_,
