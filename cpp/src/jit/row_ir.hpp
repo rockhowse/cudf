@@ -79,7 +79,7 @@ struct instance_context {
  private:
   int32_t num_tmp_vars_   = 0;       ///< The number of temporary variables generated
   std::string tmp_prefix_ = "tmp_";  ///< The prefix for temporary variable identifiers
-  bool has_nulls_         = false;   ///< True if expressions involve null values
+  bool has_nulls_         = false;   ///< If expressions involve null values
 
  public:
   instance_context() = default;  ///< Default constructor
@@ -100,11 +100,16 @@ struct instance_context {
    */
   std::string make_tmp_id();
 
+  /**
+   * @brief Returns true if expressions involve null values
+   */
   [[nodiscard]] bool has_nulls() const;
 
+  /**
+   * @brief Sets whether expressions involve null values
+   * @param has_nulls True if expressions involve null values
+   */
   void set_has_nulls(bool has_nulls);
-
-  void reset();
 };
 
 struct node {
@@ -121,13 +126,17 @@ struct node {
   virtual data_type get_type() = 0;
 
   /**
-   * @brief Returns `false` if this node forwards nulls from its inputs to its output
+   * @brief Returns `false` if this node forwards nulls from its inputs to its output.
+   * i.e. `ADD` operator is not null-aware because if any of its inputs is null, the output is null.
+   * but `NULL_EQUAL` operator is null-aware because it can produce a non-null output even if its
+   * inputs are null.
    */
   virtual bool is_null_aware() = 0;
 
   /**
-   * @brief Returns true if this node always produces a non-nullable output even if its inputs are
-   * nullable
+   * @brief Returns `true` if this node always produces a non-nullable output even if its inputs are
+   * nullable, i.e. `IS_NULL` operator produces a non-nullable boolean output regardless of the
+   * nullability of its input.
    */
   virtual bool is_always_nonnullable() = 0;
 

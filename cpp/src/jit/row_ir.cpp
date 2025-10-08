@@ -45,8 +45,6 @@ bool instance_context::has_nulls() const { return has_nulls_; }
 
 void instance_context::set_has_nulls(bool has_nulls) { has_nulls_ = has_nulls; }
 
-void instance_context::reset() { num_tmp_vars_ = 0; }
-
 get_input::get_input(int32_t input) : id_(), input_(input), type_() {}
 
 std::string_view get_input::get_id() { return id_; }
