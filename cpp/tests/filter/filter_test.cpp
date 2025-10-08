@@ -141,7 +141,7 @@ __device__ void is_even(bool* out, int32_t a) { *out = (a % 2 == 0); }
   CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, result[0]->view());
 
   std::string null_cuda = R"***(
-__device__ void is_even(bool* out, cuda::std::optional<int32_t> a) { *out = a.has_value() && (*a % 2 == 0); }
+__device__ void is_even(cuda::std::optional<bool>* out, cuda::std::optional<int32_t> a) { *out = a.has_value() && (*a % 2 == 0); }
   )***";
 
   auto null_result = cudf::filter({a}, null_cuda, {a}, false, std::nullopt, cudf::null_aware::YES);

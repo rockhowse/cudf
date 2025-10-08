@@ -213,6 +213,33 @@ jitify2::Kernel get_kernel(std::string const& kernel_name, std::string const& cu
     .get_kernel(kernel_name, {}, {{"cudf/detail/operation-udf.hpp", cuda_source}}, {"-arch=sm_."});
 }
 
+jitify2::StringVec build_jit_template_params(
+  null_aware is_null_aware,
+  bool has_user_data,
+  std::vector<std::string> const& span_outputs,
+  std::vector<input_column_reflection> const& column_inputs)
+{
+  jitify2::StringVec tparams;
+
+  tparams.emplace_back(jitify2::reflection::reflect(is_null_aware));
+  tparams.emplace_back(jitify2::reflection::reflect(has_user_data));
+
+  std::transform(thrust::counting_iterator<size_t>(0),
+                 thrust::counting_iterator(span_outputs.size()),
+                 std::back_inserter(tparams),
+                 [&](auto i) {
+                   return jitify2::reflection::Template("cudf::jit::span_accessor")
+                     .instantiate(span_outputs[i], i);
+                 });
+
+  std::transform(thrust::counting_iterator<size_t>(0),
+                 thrust::counting_iterator(column_inputs.size()),
+                 std::back_inserter(tparams),
+                 [&](auto i) { return column_inputs[i].accessor(i); });
+
+  return tparams;
+}
+
 jitify2::ConfiguredKernel build_kernel(std::string const& kernel_name,
                                        size_type base_column_size,
                                        std::vector<std::string> const& span_outputs,
@@ -236,11 +263,10 @@ jitify2::ConfiguredKernel build_kernel(std::string const& kernel_name,
            : cudf::jit::parse_single_function_cuda(udf, "GENERIC_FILTER_OP");
 
   return get_kernel(jitify2::reflection::Template(kernel_name)
-                      .instantiate(cudf::jit::build_jit_template_params(
-                        has_user_data,
+                      .instantiate(build_jit_template_params(
                         is_null_aware,
+                        has_user_data,
                         span_outputs,
-                        {},
                         cudf::jit::reflect_input_columns(base_column_size, input_columns))),
                     cuda_source)
     ->configure_1d_max_occupancy(0, 0, nullptr, stream.value());
@@ -270,6 +296,8 @@ std::vector<std::unique_ptr<column>> filter_operation(
                              is_ptx,
                              stream,
                              mr);
+
+  // [ ] handle null-masks and null-aware properly; use null_policy
 
   cudf::jit::device_span<cudf::size_type> const filter_indices_span{filter_indices.data(),
                                                                     filter_indices.size()};
