@@ -53,7 +53,7 @@ jitify2::StringVec build_jit_template_params(
   bool has_user_data,
   std::vector<std::string> const& span_outputs,
   std::vector<std::string> const& column_outputs,
-  std::vector<input_column_reflection> const& column_inputs)
+  std::vector<cudf::jit::input_column_reflection> const& column_inputs)
 {
   jitify2::StringVec tparams;
 
@@ -113,6 +113,7 @@ jitify2::ConfiguredKernel build_transform_kernel(
                         may_evaluate_null,
                         has_user_data,
                         cudf::jit::column_type_names(output_columns),
+                        {},
                         cudf::jit::reflect_input_columns(base_column_size, input_columns))),
                     cuda_source)
     ->configure_1d_max_occupancy(0, 0, nullptr, stream.value());
@@ -139,7 +140,7 @@ jitify2::ConfiguredKernel build_span_kernel(std::string const& kernel_name,
            : cudf::jit::parse_single_function_cuda(udf, "GENERIC_TRANSFORM_OP");
 
   return get_kernel(jitify2::reflection::Template(kernel_name)
-                      .instantiate(cudf::jit::build_jit_template_params(
+                      .instantiate(build_jit_template_params(
                         is_null_aware,
                         may_evaluate_null,
                         has_user_data,
@@ -234,9 +235,9 @@ std::unique_ptr<column> transform_operation(column_view base_column,
     output_type, base_column.size(), cudf::mask_state::UNALLOCATED, stream, mr);
 
   auto may_return_nulls = may_evaluate_null(base_column, inputs, is_null_aware, null_policy);
-  auto bool_null_mask   = may_return_nulls
-                            ? std::optional<rmm::device_uvector<bool>>(base_column.size(), stream, mr)
-                            : std::nullopt;
+  auto bool_null_mask =
+    may_return_nulls ? std::make_optional<rmm::device_uvector<bool>>(base_column.size(), stream, mr)
+                     : std::nullopt;
 
   auto kernel = build_transform_kernel(is_fixed_point(output_type)
                                          ? "cudf::transformation::jit::fixed_point_kernel"
@@ -263,8 +264,8 @@ std::unique_ptr<column> transform_operation(column_view base_column,
 
   if (bool_null_mask) {
     auto [null_mask, null_count] = detail::valid_if(
-      bool_null_mask->begin<bool>(),
-      bool_null_mask->end<bool>(),
+      bool_null_mask->begin(),
+      bool_null_mask->end(),
       [] __device__(bool element) { return element; },
       stream,
       mr);
@@ -286,9 +287,9 @@ std::unique_ptr<column> string_view_operation(column_view base_column,
                                               rmm::device_async_resource_ref mr)
 {
   auto may_return_nulls = may_evaluate_null(base_column, inputs, is_null_aware, null_policy);
-  auto bool_null_mask   = may_return_nulls
-                            ? std::optional<rmm::device_uvector<bool>>(base_column.size(), stream, mr)
-                            : std::nullopt;
+  auto bool_null_mask =
+    may_return_nulls ? std::make_optional<rmm::device_uvector<bool>>(base_column.size(), stream, mr)
+                     : std::nullopt;
 
   auto kernel = build_span_kernel("cudf::transformation::jit::span_kernel",
                                   base_column.size(),
@@ -317,8 +318,8 @@ std::unique_ptr<column> string_view_operation(column_view base_column,
 
   if (bool_null_mask) {
     auto [null_mask, null_count] = detail::valid_if(
-      bool_null_mask->begin<bool>(),
-      bool_null_mask->end<bool>(),
+      bool_null_mask->begin(),
+      bool_null_mask->end(),
       [] __device__(bool element) { return element; },
       stream,
       mr);

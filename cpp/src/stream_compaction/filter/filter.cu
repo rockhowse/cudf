@@ -125,6 +125,7 @@ struct filter_dispatcher<false> {
                               stencil_iterator,
                               stream,
                               mr);
+
     return cudf::make_strings_column(filtered, cudf::string_view{nullptr, 0}, stream, mr);
   }
 
@@ -170,11 +171,11 @@ void launch_filter_kernel(jitify2::ConfiguredKernel& kernel,
   auto [input_handles, inputs] =
     cudf::jit::column_views_to_device<column_device_view, column_view>(input_columns, stream, mr);
 
-  cudf::jit::device_optional_span<cudf::size_type> const* outputs_ptr = outputs.data();
-  column_device_view const* inputs_ptr                                = inputs.data();
-  void* p_user_data                                                   = user_data.value_or(nullptr);
+  cudf::jit::device_optional_span<cudf::size_type> const* p_outputs = outputs.data();
+  column_device_view const* p_inputs                                = inputs.data();
+  void* p_user_data                                                 = user_data.value_or(nullptr);
 
-  std::array<void*, 3> args{&outputs_ptr, &inputs_ptr, &p_user_data};
+  std::array<void*, 3> args{&p_outputs, &p_inputs, &p_user_data};
 
   kernel->launch_raw(args.data());
 }
@@ -217,7 +218,7 @@ jitify2::StringVec build_jit_template_params(
   null_aware is_null_aware,
   bool has_user_data,
   std::vector<std::string> const& span_outputs,
-  std::vector<input_column_reflection> const& column_inputs)
+  std::vector<cudf::jit::input_column_reflection> const& column_inputs)
 {
   jitify2::StringVec tparams;
 
@@ -296,8 +297,6 @@ std::vector<std::unique_ptr<column>> filter_operation(
                              is_ptx,
                              stream,
                              mr);
-
-  // [ ] handle null-masks and null-aware properly; use null_policy
 
   cudf::jit::device_span<cudf::size_type> const filter_indices_span{filter_indices.data(),
                                                                     filter_indices.size()};
