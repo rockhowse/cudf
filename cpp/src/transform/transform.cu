@@ -112,8 +112,8 @@ jitify2::ConfiguredKernel build_transform_kernel(
                         is_null_aware,
                         may_evaluate_null,
                         has_user_data,
-                        cudf::jit::column_type_names(output_columns),
                         {},
+                        cudf::jit::column_type_names(output_columns),
                         cudf::jit::reflect_input_columns(base_column_size, input_columns))),
                     cuda_source)
     ->configure_1d_max_occupancy(0, 0, nullptr, stream.value());

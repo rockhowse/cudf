@@ -114,8 +114,8 @@ std::string set_output::generate_code(instance_context& ctx,
         "{}\n"
         "{} {} = {};\n"
         "*{} = {};",
-        cuda_type(type_, ctx.has_nulls()),
         source_code,
+        cuda_type(type_, ctx.has_nulls()),
         id_,
         source_->get_id(),
         output_id_,
