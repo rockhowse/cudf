@@ -195,8 +195,14 @@ struct get_input final : node {
    */
   data_type get_type() override;
 
+  /**
+   * @copydoc node::is_null_aware
+   */
   [[nodiscard]] bool is_null_aware() override;
 
+  /**
+   * @copydoc node::is_always_nonnullable
+   */
   [[nodiscard]] bool is_always_nonnullable() override;
 
   /**
@@ -251,8 +257,14 @@ struct set_output final : node {
    */
   data_type get_type() override;
 
+  /**
+   * @copydoc node::is_null_aware
+   */
   [[nodiscard]] bool is_null_aware() override;
 
+  /**
+   * @copydoc node::is_always_nonnullable
+   */
   [[nodiscard]] bool is_always_nonnullable() override;
 
   /**
@@ -339,8 +351,14 @@ struct operation final : node {
    */
   data_type get_type() override;
 
+  /**
+   * @copydoc node::is_null_aware
+   */
   [[nodiscard]] bool is_null_aware() override;
 
+  /**
+   * @copydoc node::is_always_nonnullable
+   */
   [[nodiscard]] bool is_always_nonnullable() override;
 
   /**
