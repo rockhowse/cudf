@@ -53,7 +53,7 @@ cache:
         SCCACHE_S3_USE_SSL: ${{ env.get("SCCACHE_S3_USE_SSL") }}
         SCCACHE_S3_NO_CREDENTIALS: ${{ env.get("SCCACHE_S3_NO_CREDENTIALS") }}
         SCCACHE_S3_KEY_PREFIX: libcudf-${{ env.get("RAPIDS_CONDA_ARCH") }}
-        NVCC_APPEND_FLAGS: ${{ env.get("NVCC_APPEND_FLAGS") }}
+        NVCC_APPEND_FLAGS: ${{ env.get("NVCC_APPEND_FLAGS", default="") }}
 
   requirements:
     build:
@@ -217,7 +217,7 @@ outputs:
           SCCACHE_S3_USE_SSL: ${{ env.get("SCCACHE_S3_USE_SSL") }}
           SCCACHE_S3_NO_CREDENTIALS: ${{ env.get("SCCACHE_S3_NO_CREDENTIALS") }}
           SCCACHE_S3_KEY_PREFIX: libcudf-${{ env.get("RAPIDS_CONDA_ARCH") }}
-          NVCC_APPEND_FLAGS: ${{ env.get("NVCC_APPEND_FLAGS") }}
+          NVCC_APPEND_FLAGS: ${{ env.get("NVCC_APPEND_FLAGS", default="") }}
       string: cuda${{ cuda_major }}_${{ date_string }}_${{ head_rev }}
       dynamic_linking:
         overlinking_behavior: "error"
