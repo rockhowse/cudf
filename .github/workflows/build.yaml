@@ -53,7 +53,8 @@ jobs:
       date: ${{ inputs.date }}
       script: ci/build_cpp.sh
       sha: ${{ inputs.sha }}
-      node_type: "cpu16"
+      node_type: "cpu8"
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   python-build:
     needs: [telemetry-setup, cpp-build]
     secrets: inherit
@@ -64,6 +65,7 @@ jobs:
       date: ${{ inputs.date }}
       script: ci/build_python.sh
       sha: ${{ inputs.sha }}
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   upload-conda:
     needs: [cpp-build, python-build]
     secrets: inherit
@@ -95,13 +97,15 @@ jobs:
       # build for every combination of arch and CUDA version, but only for the latest Python
       matrix_filter: group_by([.ARCH, (.CUDA_VER|split(".")|map(tonumber)|.[0])]) | map(max_by(.PY_VER|split(".")|map(tonumber)))
       build_type: ${{ inputs.build_type || 'branch' }}
+      node_type: cpu8
       branch: ${{ inputs.branch }}
       sha: ${{ inputs.sha }}
       date: ${{ inputs.date }}
-      node_type: "cpu16"
+      node_type: "cpu8"
       script: ci/build_wheel_libcudf.sh
       package-name: libcudf
       package-type: cpp
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   wheel-publish-libcudf:
     needs: wheel-build-libcudf
     secrets: inherit
@@ -119,12 +123,14 @@ jobs:
     uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@main
     with:
       build_type: ${{ inputs.build_type || 'branch' }}
+      node_type: cpu8
       branch: ${{ inputs.branch }}
       sha: ${{ inputs.sha }}
       date: ${{ inputs.date }}
       script: ci/build_wheel_pylibcudf.sh
       package-name: pylibcudf
       package-type: python
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   wheel-publish-pylibcudf:
     needs: wheel-build-pylibcudf
     secrets: inherit
@@ -142,12 +148,14 @@ jobs:
     uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@main
     with:
       build_type: ${{ inputs.build_type || 'branch' }}
+      node_type: cpu8
       branch: ${{ inputs.branch }}
       sha: ${{ inputs.sha }}
       date: ${{ inputs.date }}
       script: ci/build_wheel_cudf.sh
       package-name: cudf
       package-type: python
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   wheel-publish-cudf:
     needs: wheel-build-cudf
     secrets: inherit
@@ -167,6 +175,7 @@ jobs:
       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
       build_type: ${{ inputs.build_type || 'branch' }}
+      node_type: cpu8
       branch: ${{ inputs.branch }}
       sha: ${{ inputs.sha }}
       date: ${{ inputs.date }}
@@ -174,6 +183,7 @@ jobs:
       package-name: dask_cudf
       package-type: python
       pure-wheel: true
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   wheel-publish-dask-cudf:
     needs: wheel-build-dask-cudf
     secrets: inherit
@@ -193,6 +203,7 @@ jobs:
       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
       build_type: ${{ inputs.build_type || 'branch' }}
+      node_type: cpu8
       branch: ${{ inputs.branch }}
       sha: ${{ inputs.sha }}
       date: ${{ inputs.date }}
@@ -200,6 +211,7 @@ jobs:
       package-name: cudf_polars
       package-type: python
       pure-wheel: true
+      sccache-dist-token-secret-name: GIST_REPO_READ_ORG_GITHUB_TOKEN
   wheel-publish-cudf-polars:
     needs: wheel-build-cudf-polars
     secrets: inherit
