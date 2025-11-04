@@ -82,6 +82,9 @@ fi
 cat ../python/cudf/cudf/pandas/scripts/conftest-patch.py >> pandas-tests/conftest.py
 
 # Run the tests
+set -e
+python ../python/cudf/cudf/pandas/scripts/modify.py
+set +e
 cd pandas-tests/
 
 
