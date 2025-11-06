@@ -2306,11 +2306,6 @@ def initial_setup():
     )
     cudf.set_option("mode.pandas_compatible", True)
 
-    # Once we switch to pandas 3.0 CoW will be default
-    # if os.getenv("PANDAS_CI", 0) and parse(pd.__version__) <= parse("3.0.0"):
-    #     cudf.set_option("copy_on_write", True)
-    #     pd.set_option("mode.copy_on_write", True)
-
 
 def _unpickle_obj(pickled_args):
     from cudf.pandas.module_accelerator import disable_module_accelerator
